@@ -1,15 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace SmartShortcuts.Models
 {
-    public class Key
+    public class BaseDataObject
     {
         [Key]
         public string ID { get; set; }
-
-        public Int32 VKCode { get; set; }
-
-        public string KeyName { get; set; }
     }
 }

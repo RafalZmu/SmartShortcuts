@@ -1,12 +1,16 @@
-﻿namespace SmartShortcuts.ViewModels
+﻿using System;
+using System.Reactive.Linq;
+
+namespace SmartShortcuts.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        public ViewModelBase Content { get; set; }
+        public ViewModelBase CurrentPage { get; set; }
 
         public MainWindowViewModel()
         {
-            Content = new ShortcutsViewModel();
+            var shortcutsViewModel = new ShortcutsViewModel();
+            CurrentPage = shortcutsViewModel;
         }
     }
 }

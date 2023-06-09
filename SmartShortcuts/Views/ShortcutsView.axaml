@@ -1,22 +1,77 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:converters="clr-namespace:SmartShortcuts.Converters"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:dragAndDrop="clr-namespace:Mvvm.CommonInteractions"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:behaviors="clr-namespace:ReactiveUI;assembly=ReactiveUI"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="SmartShortcuts.Views.ShortcutsView">
-	<ScrollViewer>
-		<Grid Margin="0,30,0,0" RowDefinitions="Auto, Auto">
-			<ItemsControl Grid.Row="0" Items="{Binding Shortcuts, Mode= TwoWay}">
-				<ItemsControl.ItemTemplate>
-					<DataTemplate>
-						<Grid ColumnDefinitions="*,*">
-							<TextBox Grid.Column="0" Watermark="Shortcut" Text="{Binding ShortcutToDisplay, Mode=TwoWay}" />
-							<TextBox Grid.Column="1" Watermark="Action" Text="{Binding Action, Mode=TwoWay}" />
-						</Grid>
-					</DataTemplate>
-				</ItemsControl.ItemTemplate>
-			</ItemsControl>
-			<Button Grid.ColumnSpan="4" Grid.Row="1" Content="Add new shortcut" Command="{Binding AddNewShortcutCommand}" />
+
+	<UserControl.Resources>
+		<converters:LastWordFromActionConverter x:Key="lastWordFromActionConverter" />
+	</UserControl.Resources>
+
+	<!-- Shortcuts and Combos layout-->
+	<Grid ColumnDefinitions="*,3*">
+		<Grid Grid.Column="0" RowDefinitions="Auto,*,Auto,*,Auto">
+			<Label Grid.Row="0" FontSize="20" HorizontalContentAlignment="Center" BorderBrush="{Binding AccentColor}" BorderThickness="3,0" Background="#292828">Shortcuts</Label>
+			<ScrollViewer Grid.Row="1">
+				<ItemsControl Padding="5" Items="{Binding Shortcuts}" Background="#1E1E1E">
+					<ItemsControl.ItemTemplate>
+						<DataTemplate>
+							<Button Margin="0,3" BorderThickness="1" BorderBrush="{Binding $parent[UserControl].DataContext.AccentColor}" Command="{Binding $parent[UserControl].DataContext.ChangeShortcutInFocusCommand}" CommandParameter="{Binding ID}" CornerRadius="5" HorizontalAlignment="Stretch">
+								<DockPanel>
+									<Label DockPanel.Dock="Left" FontSize="15" Content="{Binding ShortcutKeys}" />
+									<Label DockPanel.Dock="Right" FontSize="15" Content="{Binding Action, Converter={StaticResource lastWordFromActionConverter}}" />
+								</DockPanel>
+							</Button>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</ScrollViewer>
+			<Label Grid.Row="2" FontSize="20" HorizontalContentAlignment="Center" BorderBrush="{Binding AccentColor}" BorderThickness="3,0" Background="#292828">Combos</Label>
+			<ScrollViewer Grid.Row="3">
+				<ItemsControl Padding="5" Items="{Binding ComboShortcuts}" Background="#1E1E1E">
+					<ItemsControl.ItemTemplate>
+						<DataTemplate>
+							<Button BorderThickness="2" BorderBrush="{Binding $parent[UserControl].DataContext.AccentColor}" Command="{Binding ChangeShortcutInFocusCommand}" CommandParameter="{Binding ID}" CornerRadius="20" HorizontalAlignment="Stretch">
+								<DockPanel>
+									<Label DockPanel.Dock="Left" Content="{Binding ShortcutToDisplay}" />
+									<Label DockPanel.Dock="Right" Content="{Binding Action, Converter={StaticResource lastWordFromActionConverter}}" />
+								</DockPanel>
+							</Button>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</ScrollViewer>
+			<Border Grid.Row="4" Background="#292828">
+				<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Command="{Binding	CreateNewShortcutCommand}" Background="#292828" Grid.Row="4" Content="Add new shortcut" />
+			</Border>
 		</Grid>
-	</ScrollViewer>
+
+		<!-- Shortcut Properties layout -->
+		<Grid RowDefinitions="Auto,Auto,Auto,*" Grid.Column="1" HorizontalAlignment="Stretch">
+			<Label FontSize="20" Background="#292828"  HorizontalContentAlignment="Center"> Shortcut Properties</Label>
+			<Border Grid.Row="1" CornerRadius="5" Padding="5" Margin="3" Background="#1E1E1E">
+				<Grid ColumnDefinitions="*,Auto">
+					<Label VerticalAlignment="Center" FontSize="20" Grid.Column="0" Content="{Binding SelectedShortcutKeys, StringFormat='Shortcut keys: {0}'}" />
+					<Button Grid.Column="1" CornerRadius="8" BorderBrush="{Binding $parent[UserControl].DataContext.AccentColor}" BorderThickness="1" Content="Change" />
+				</Grid>
+			</Border>
+			<Border Background="#1E1E1E" Grid.Row="2" Padding="5" CornerRadius="5" Margin="3">
+				<Grid ColumnDefinitions="Auto,*,Auto">
+					<Label VerticalAlignment="Center" FontSize="20" Content="Actions paths:" />
+					<TextBox Name="Action" Grid.Column="1" AcceptsReturn="True" Text="{Binding SelectedShortcutAction}" HorizontalAlignment="Stretch" Watermark="" Margin="0,0,10,0" />
+				</Grid>
+			</Border>
+			<Border Grid.Row="3" Margin="3" CornerRadius="8" Background="#1E1E1E" DragDrop.AllowDrop="True">
+				<Grid ColumnDefinitions="*,Auto,*" RowDefinitions="Auto, Auto, *">
+					<Button Grid.Column="0" FontSize="20" VerticalAlignment="Top" Margin="0,10,0,0" HorizontalAlignment="Center" Content="Select file to open" Command="{Binding OpenFileBrowserCommand}" CommandParameter="{Binding $parent[Window]}" CornerRadius="8" BorderBrush="{Binding $parent[UserControl].DataContext.AccentColor}" BorderThickness="1" />
+					<Label Grid.Column="1" FontSize="20" Content="Or" Margin="0,15,0,0" HorizontalAlignment="Center" />
+					<Button Grid.Column="2" FontSize="20" VerticalAlignment="Top" Margin="0,10,0,0" HorizontalAlignment="Center" Content="Select folder to open " Command="{Binding OpenFileBrowserCommand}" CommandParameter="{Binding $parent[Window]}" CornerRadius="8" BorderBrush="{Binding $parent[UserControl].DataContext.AccentColor}" BorderThickness="1" />
+				</Grid>
+			</Border>
+		</Grid>
+	</Grid>
 </UserControl>

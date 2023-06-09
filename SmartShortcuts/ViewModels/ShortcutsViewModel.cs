@@ -1,13 +1,21 @@
-﻿using ReactiveUI;
+﻿using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Templates;
+using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using SmartShortcuts.Models;
 using SmartShortcuts.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using Action = SmartShortcuts.Models.Action;
 
 namespace SmartShortcuts.ViewModels
 {
@@ -18,7 +26,6 @@ namespace SmartShortcuts.ViewModels
         private readonly KeyboardManager _keyboardManager;
         private IProjectRepository _database;
         private string _keyPressed;
-        private List<Key> _keys;
 
         private ObservableCollection<Shortcut> _shortcuts;
 
@@ -26,13 +33,13 @@ namespace SmartShortcuts.ViewModels
 
         #region Properties
 
+        private string _selectedShortcutAction;
+
         public ObservableCollection<Shortcut> Shortcuts
         {
             get
             {
-                UpdateDatabase(_shortcuts);
                 return _shortcuts;
-                //Save changes to database
             }
             set
             {
@@ -50,69 +57,105 @@ namespace SmartShortcuts.ViewModels
             }
         }
 
-        public ReactiveCommand<Unit, Unit> AddNewShortcutCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> CreateNewShortcutCommand { get; }
+        public ReactiveCommand<string, Unit> ChangeShortcutInFocusCommand { get; }
+        public ReactiveCommand<Window, Task> OpenFileBrowserCommand { get; }
+        public string AccentColor { get; set; } = "#066D08";
+
+        [Reactive]
+        public string SelectedShortcutID { get; set; }
+
+        [Reactive]
+        public string SelectedShortcutKeys { get; set; }
+
+        public string SelectedShortcutAction
+        {
+            get => _selectedShortcutAction;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _selectedShortcutAction, value);
+                UpdateDatabase(SelectedShortcutID);
+            }
+        }
 
         #endregion Properties
-
-        #region Public Constructors
 
         public ShortcutsViewModel()
         {
             _database = new ProjectRepository(new ShortcutsContext());
 
-            _keys = _database.GetAll<Key>().ToList();
-
             Shortcuts = new ObservableCollection<Shortcut>(_database.GetAll<Shortcut>().ToList());
 
-            AddNewShortcutCommand = ReactiveCommand.Create(() => AddSpaceForNewShortcut());
+            var actions = _database.GetAll<Action>().ToList();
+            foreach (var shortcut in Shortcuts)
+            {
+                shortcut.Actions = actions.Where(x => x.Shortcut.ID == shortcut.ID).ToList();
+            }
+            SelectedShortcutAction = "";
+            SelectedShortcutKeys = "";
+
+            CreateNewShortcutCommand = ReactiveCommand.Create(CreateNewShortcut);
+            ChangeShortcutInFocusCommand = ReactiveCommand.Create<string, Unit>(ChangeShortcutInFocus);
+            OpenFileBrowserCommand = ReactiveCommand.Create<Window, Task>(OpenFileBrowser);
 
             _keyboardManager = new KeyboardManager(_database);
             _keyboardManager.KeyPressed += OpenWindowBasedOnClickedKeys;
         }
 
-        #endregion Public Constructors
+        private async Task OpenFileBrowser(Window window)
+        {
+            var fileDialog = new OpenFileDialog();
+            var result = await fileDialog.ShowAsync(window);
+            if (result != null)
+            {
+                string[] fileNames = result;
+            }
+        }
+
+        private void CreateNewShortcut()
+        {
+            var newShortcut = new Shortcut();
+            Shortcuts.Add(newShortcut);
+            SelectedShortcutAction = "New shortcut";
+            SelectedShortcutKeys = "";
+            _database.Add<Shortcut>(newShortcut);
+            _database.Save();
+        }
 
         #region Private Methods
 
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
 
-        private void UpdateDatabase(ObservableCollection<Shortcut> shortcuts)
+        private void UpdateDatabase(string id)
         {
-            foreach (var shortcut in shortcuts)
+            var shortcutToEdit = Shortcuts.Where(x => x.ID == id).FirstOrDefault();
+            if (shortcutToEdit == null)
+                return;
+            var actionsToDelete = _database.GetAll<Action>().Where(x => x.Shortcut.ID == shortcutToEdit.ID).ToList();
+            actionsToDelete.ForEach(x => _database.Delete(x));
+
+            shortcutToEdit.Actions = SelectedShortcutAction.Trim().Split('\n').Select(x => new Action() { Path = x }).ToList();
+            shortcutToEdit.ShortcutKeys = SelectedShortcutKeys.Replace(" ", "").Replace('+', ',');
+
+            foreach (var action in shortcutToEdit.Actions)
             {
-                //Check if property keysToDisplay or Action are empty
-                if (shortcut.ShortcutToDisplay == "" || shortcut.Action == "")
-                {
-                    _database.Delete(shortcut);
-                    continue;
-                }
-                //Check if shortcut is already in database if not add it
-                if (!_database.GetAll<Shortcut>().Any(x => x.ID == shortcut.ID))
-                {
-                    _database.Add(shortcut);
-                }
-                else
-                {
-                    //Check if shortcut has changed
-                    if (_database.GetAll<Shortcut>()
-                            .Any(x => x.ID == shortcut.ID && x.ShortcutToDisplay != shortcut.ShortcutToDisplay))
-                    {
-                        _database.Update(shortcut);
-                    }
-                }
+                _database.Add(action);
             }
+            _database.Update<Shortcut>(shortcutToEdit);
+            _database.Save();
         }
 
-        private void AddSpaceForNewShortcut()
+        private Unit ChangeShortcutInFocus(string shortcutID)
         {
-            Shortcuts.Add(new Shortcut()
-            {
-                ID = Guid.NewGuid().ToString(),
-                ShortcutToDisplay = "Add new shortcut",
-                Action = "",
-                ShortcutKeys = new List<Key>()
-            });
+            var shortcut = Shortcuts.FirstOrDefault(x => x.ID == shortcutID);
+            if (shortcut == null)
+                return new Unit();
+            SelectedShortcutID = shortcutID;
+            SelectedShortcutKeys = shortcut.ShortcutKeys;
+            var actionPaths = Shortcuts.SelectMany(s => s.Actions).Select(a => a.Path);
+            SelectedShortcutAction = string.Join('\n', actionPaths);
+            return new Unit();
         }
 
         private void OpenWindowBasedOnClickedKeys(object sender, KeyEventArgs clickedKeys)
@@ -120,11 +163,11 @@ namespace SmartShortcuts.ViewModels
             // Check all Shortcuts for matching keys combination
             foreach (var shortcut in Shortcuts)
             {
-                if (clickedKeys.Keys.Count != shortcut.ShortcutKeys.Count)
+                if (clickedKeys.Keys.Count != shortcut.ShortcutKeys.Split(',').Count())
                 {
                     continue;
                 }
-                bool allKeysMatch = clickedKeys.Keys.All(x => shortcut.ShortcutKeys.Any(y => y.KeyName == x));
+                bool allKeysMatch = clickedKeys.Keys.All(x => shortcut.ShortcutKeys.Split(',').Any(y => y == x));
                 if (allKeysMatch)
                 {
                     LaunchMatchingProgram(shortcut);
@@ -133,16 +176,21 @@ namespace SmartShortcuts.ViewModels
 
             static void LaunchMatchingProgram(Shortcut shortcut)
             {
-                var runningProcess = Process.GetProcessesByName(shortcut.Action.Split(@"\").Last().Replace(".exe", ""));
-
-                if (runningProcess.Length == 0)
-                    Process.Start(shortcut.Action);
-                else
+                if (shortcut.Actions.Count == 0)
+                    return;
+                foreach (var action in shortcut.Actions)
                 {
-                    foreach (var process in runningProcess)
+                    var runningProcess = Process.GetProcessesByName(action.Path.Split(@"\").Last().Replace(".exe", ""));
+
+                    if (runningProcess.Length == 0)
+                        Process.Start(action.Path);
+                    else
                     {
-                        IntPtr handle = process.MainWindowHandle;
-                        SetForegroundWindow(handle);
+                        foreach (var process in runningProcess)
+                        {
+                            IntPtr handle = process.MainWindowHandle;
+                            SetForegroundWindow(handle);
+                        }
                     }
                 }
             }

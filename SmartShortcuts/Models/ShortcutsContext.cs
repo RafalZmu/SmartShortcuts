@@ -6,6 +6,7 @@ namespace SmartShortcuts.Models
     public class ShortcutsContext : DbContext
     {
         public DbSet<Shortcut> Shortcuts { get; set; }
+        public DbSet<Action> Actions { get; set; }
 
         public string DbPath { get; }
 

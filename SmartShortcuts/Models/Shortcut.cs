@@ -1,28 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 namespace SmartShortcuts.Models
 {
-    public class Shortcut
+    public class Shortcut : BaseDataObject
     {
-        public List<Key> ShortcutKeys { get; set; }
-        public string? Action { get; set; }
-        public string ShortcutToDisplay { get; set; }
-        public string ID { get; set; }
+        public string ShortcutKeys { get; set; }
+        public virtual ICollection<Action> Actions { get; set; }
 
         #region Public Constructors
 
         public Shortcut()
         {
-        }
-
-        public Shortcut(List<Key> shortcutKeys, string action)
-        {
             ID = Guid.NewGuid().ToString();
-            ShortcutKeys = shortcutKeys;
-            Action = action;
-            ShortcutToDisplay = string.Join("+", shortcutKeys.Select(x => x.KeyName).ToList());
+            ShortcutKeys = "New shortcut";
+            Actions = new List<Action>();
         }
 
         #endregion Public Constructors

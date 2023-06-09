@@ -1,6 +1,7 @@
 ﻿using SmartShortcuts.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -37,10 +38,7 @@ namespace SmartShortcuts.Services
 
         private void GetAllCurrentlyPressedKeys()
         {
-            Dictionary<int, string> keyDictionary = new();
-            _database.GetAll<Key>()
-                .ToList()
-                .ForEach(x => keyDictionary.Add(x.VKCode, value: x.KeyName));
+            Dictionary<int, string> keyDictionary = GetKeyCodesDictionary();
 
             [DllImport("user32.dll")]
             static extern short GetAsyncKeyState(int vKey);
@@ -66,6 +64,23 @@ namespace SmartShortcuts.Services
                     KeyPressed?.Invoke(this, new KeyEventArgs(clieckedKeys));
                 }
             }
+        }
+
+        private Dictionary<int, string> GetKeyCodesDictionary()
+        {
+            Dictionary<int, string> returnDictionary = new();
+            string projectDirectory = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName;
+            var keyCodesList = File.OpenText(@$"{projectDirectory}/Assets/KeyCodes.txt")
+                .ReadToEnd()
+                .Split("\r\n")
+                .ToList();
+            keyCodesList.ForEach(x =>
+                {
+                    string[] split = x.Split("\t");
+                    returnDictionary.Add(Convert.ToInt32(split[0].Trim(), 16), split[1].Trim());
+                });
+
+            return returnDictionary;
         }
 
         #endregion Private Methods
