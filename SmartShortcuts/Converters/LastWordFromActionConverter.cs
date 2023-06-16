@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.Tracing;
 using Avalonia.Data.Converters;
 
 namespace SmartShortcuts.Converters
@@ -13,11 +14,8 @@ namespace SmartShortcuts.Converters
             if (string.IsNullOrEmpty(inputString))
                 return string.Empty;
 
-            string[] words = inputString.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
-            if (words.Length > 0)
-                return words[^1];
-
-            return string.Empty;
+            string word = string.Join("+", inputString.Split("\n"));
+            return word;
         }
 
         public object? ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)

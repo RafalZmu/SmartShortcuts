@@ -121,12 +121,6 @@
 0x87	F24 key
 0x90	NUM LOCK key
 0x91	SCROLL LOCK key
-0xA0	Left SHIFT key
-0xA1	Right SHIFT key
-0xA2	Left CONTROL key
-0xA3	Right CONTROL key
-0xA4	Left ALT key
-0xA5	Right ALT key
 0xA6	Browser Back key
 0xA7	Browser Forward key
 0xA8	Browser Refresh key
