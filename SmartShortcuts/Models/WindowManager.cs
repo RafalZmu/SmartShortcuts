@@ -12,13 +12,6 @@ namespace SmartShortcuts.Models
 {
     public class WindowManager
     {
-        private ObservableCollection<Shortcut> _shortcuts;
-
-        public WindowManager(ObservableCollection<Shortcut> shortcuts)
-        {
-            _shortcuts = shortcuts;
-        }
-
         public static Process? FindClosestProcess(Process[] processes, string targetWindowTitle)
         {
             int maxMatchingLength = 0;
@@ -57,7 +50,7 @@ namespace SmartShortcuts.Models
             return matchingLength;
         }
 
-        public void LaunchMatchingProgram(Shortcut shortcut)
+        public static void LaunchMatchingProgram(Shortcut shortcut)
         {
             if (shortcut.Actions.Count == 0 || shortcut.Actions is null)
                 return;

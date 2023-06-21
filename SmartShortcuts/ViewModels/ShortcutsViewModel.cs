@@ -30,7 +30,6 @@ namespace SmartShortcuts.ViewModels
         private IProjectRepository _database;
         private HashSet<string> _keysPressed = new();
         private List<string> LastKeysPressed = new();
-        private WindowManager _windowManager;
 
         private ObservableCollection<Shortcut> _shortcuts;
 
@@ -96,8 +95,6 @@ namespace SmartShortcuts.ViewModels
             ChangeShortcutInFocusCommand = ReactiveCommand.Create<string, Unit>(ChangeShortcutInFocus);
             OpenFileBrowserCommand = ReactiveCommand.Create<Window, Task>(OpenFileBrowser);
             StartListeningToKeysCommand = ReactiveCommand.Create(() => { ListeningToKeys = true; });
-
-            _windowManager = new WindowManager(Shortcuts);
 
             _keyboardManager = new KeyboardManager(_database);
             _keyboardManager.KeyPressed += ListenToKeysPressed;
@@ -211,7 +208,7 @@ namespace SmartShortcuts.ViewModels
                 bool allKeysMatch = clickedKeys.All(x => shortcut.ShortcutKeys.Split('+').Any(y => y == x));
 
                 if (allKeysMatch)
-                    _windowManager.LaunchMatchingProgram(shortcut);
+                    WindowManager.LaunchMatchingProgram(shortcut);
             }
         }
     }
