@@ -43,10 +43,10 @@ namespace SmartShortcuts.Services
             [DllImport("user32.dll")]
             static extern short GetAsyncKeyState(int vKey);
 
-            List<string> clieckedKeys = new();
+            List<string> clickedKeys = new();
             while (true)
             {
-                clieckedKeys.Clear();
+                clickedKeys.Clear();
                 Thread.Sleep(50);
                 foreach (var item in keyDictionary)
                 {
@@ -56,12 +56,12 @@ namespace SmartShortcuts.Services
 
                     if (isKeyPressed)
                     {
-                        clieckedKeys.Add(item.Value);
+                        clickedKeys.Add(item.Value);
                     }
                 }
-                if (clieckedKeys.Count > 0)
+                if (clickedKeys.Count > 0)
                 {
-                    KeyPressed?.Invoke(this, new KeyEventArgs(clieckedKeys));
+                    KeyPressed?.Invoke(this, new KeyEventArgs(clickedKeys));
                 }
             }
         }

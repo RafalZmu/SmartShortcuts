@@ -30,6 +30,7 @@ namespace SmartShortcuts.ViewModels
         private IProjectRepository _database;
         private HashSet<string> _keysPressed = new();
         private List<string> LastKeysPressed = new();
+        private WindowManager _windowManager;
 
         private ObservableCollection<Shortcut> _shortcuts;
 
@@ -96,6 +97,8 @@ namespace SmartShortcuts.ViewModels
             OpenFileBrowserCommand = ReactiveCommand.Create<Window, Task>(OpenFileBrowser);
             StartListeningToKeysCommand = ReactiveCommand.Create(() => { ListeningToKeys = true; });
 
+            _windowManager = new WindowManager(Shortcuts);
+
             _keyboardManager = new KeyboardManager(_database);
             _keyboardManager.KeyPressed += ListenToKeysPressed;
         }
@@ -113,87 +116,15 @@ namespace SmartShortcuts.ViewModels
         private void CreateNewShortcut()
         {
             var newShortcut = new Shortcut();
-            Shortcuts.Add(newShortcut);
-            SelectedShortcutAction = "New shortcut";
-            SelectedShortcutKeys = "";
             _database.Add<Shortcut>(newShortcut);
             _database.Save();
+            Shortcuts.Add(newShortcut);
+            ChangeShortcutInFocus(newShortcut.ID);
+            SelectedShortcutAction = "New shortcut";
+            SelectedShortcutKeys = "";
         }
 
         #region Private Methods
-
-        public static Process FindClosestProcess(Process[] processes, string targetWindowTitle)
-        {
-            int maxMatchingLength = 0;
-            Process closestProcess = null;
-
-            foreach (Process process in processes)
-            {
-                if (!string.IsNullOrEmpty(process.MainWindowTitle))
-                {
-                    int matchingLength = GetMatchngPartLength(process.MainWindowTitle, targetWindowTitle);
-                    if (matchingLength > maxMatchingLength && matchingLength > (targetWindowTitle.Length / 2))
-                    {
-                        maxMatchingLength = matchingLength;
-                        closestProcess = process;
-                    }
-                }
-            }
-
-            return closestProcess;
-        }
-
-        public static int GetMatchngPartLength(string possibleMatch, string target)
-        {
-            int matchingLength = 0;
-            possibleMatch = possibleMatch.ToLower().Replace(" ", "");
-            target = target.ToLower().Replace(" ", "");
-
-            for (int i = 1; i < target.Length; i++)
-            {
-                if (possibleMatch.Contains(target[..i]))
-                    matchingLength = i;
-                else
-                    break;
-            }
-            return matchingLength;
-        }
-
-        [DllImport("user32.dll")]
-        private static extern bool SetForegroundWindow(IntPtr hWnd);
-
-        private static void LaunchMatchingProgram(Shortcut shortcut)
-        {
-            if (shortcut.Actions.Count == 0)
-                return;
-
-            Process[] oppenedProceses = Process.GetProcesses();
-            oppenedProceses = oppenedProceses.Where(x => !string.IsNullOrEmpty(x.MainWindowTitle)).ToArray();
-
-            foreach (var action in shortcut.Actions)
-            {
-                Process processToOpen = FindClosestProcess(oppenedProceses, action.Path.Split(@"\").Last().Replace(".exe", ""));
-
-                if (processToOpen is null)
-                {
-                    try
-                    {
-                        Process proc = new();
-                        proc.StartInfo.FileName = action.Path;
-                        proc.Start();
-                        var name = proc.ProcessName;
-                        action.Process = proc;
-                        continue;
-                    }
-                    catch (Exception e)
-                    {
-                        continue;
-                    }
-                }
-                IntPtr handle = processToOpen.MainWindowHandle;
-                SetForegroundWindow(handle);
-            }
-        }
 
         private void UpdateDatabase(string id)
         {
@@ -228,15 +159,19 @@ namespace SmartShortcuts.ViewModels
 
         private void ListenToKeysPressed(object sender, KeyEventArgs clickedKeys)
         {
-            if (clickedKeys == null || clickedKeys.Keys.Count == 0)
+            if (clickedKeys == null)
                 return;
 
-            //TODO check if the same keys were pressed in last call of this method if so return
             var pressedKeys = new List<string>();
             foreach (var key in clickedKeys.Keys)
             {
                 pressedKeys.Add(key.Replace(" key", ""));
             }
+            if (pressedKeys.SequenceEqual(LastKeysPressed))
+            {
+                return;
+            }
+            LastKeysPressed = pressedKeys;
 
             if (ListeningToKeys)
             {
@@ -261,9 +196,6 @@ namespace SmartShortcuts.ViewModels
             }
             else
             {
-                if (LastKeysPressed.SequenceEqual(pressedKeys))
-                    return;
-                LastKeysPressed = pressedKeys;
                 OpenWindowBasedOnClickedKeys(pressedKeys);
             }
         }
@@ -279,7 +211,7 @@ namespace SmartShortcuts.ViewModels
                 bool allKeysMatch = clickedKeys.All(x => shortcut.ShortcutKeys.Split('+').Any(y => y == x));
 
                 if (allKeysMatch)
-                    LaunchMatchingProgram(shortcut);
+                    _windowManager.LaunchMatchingProgram(shortcut);
             }
         }
     }

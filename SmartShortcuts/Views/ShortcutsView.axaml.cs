@@ -14,7 +14,7 @@ public partial class ShortcutsView : UserControl
     public ShortcutsView()
     {
         InitializeComponent();
-        DataContext = new ShortcutsViewModel();
+        //DataContext = new ShortcutsViewModel();
 
         AddHandler(DragDrop.DropEvent, Drop);
     }
@@ -29,7 +29,7 @@ public partial class ShortcutsView : UserControl
         {
             if (filePath.Contains(".lnk"))
             {
-                WshShell shell = new WshShell();
+                WshShell shell = new();
                 WshShortcut shortcut = (WshShortcut)shell.CreateShortcut(filePath);
                 paths.Add(shortcut.TargetPath);
             }

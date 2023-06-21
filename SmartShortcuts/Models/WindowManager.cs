@@ -1,0 +1,117 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace SmartShortcuts.Models
+{
+    public class WindowManager
+    {
+        private ObservableCollection<Shortcut> _shortcuts;
+
+        public WindowManager(ObservableCollection<Shortcut> shortcuts)
+        {
+            _shortcuts = shortcuts;
+        }
+
+        public static Process? FindClosestProcess(Process[] processes, string targetWindowTitle)
+        {
+            int maxMatchingLength = 0;
+            Process closestProcess = null;
+
+            foreach (Process process in processes)
+            {
+                if (!string.IsNullOrEmpty(process.MainWindowTitle))
+                {
+                    int matchingLength = GetProcessMatchingLength(process.MainModule.ModuleName, targetWindowTitle);
+
+                    if (matchingLength > maxMatchingLength && matchingLength > (targetWindowTitle.Length / 2) && process.MainModule.ModuleName.Length < targetWindowTitle.Length * 2)
+                    {
+                        maxMatchingLength = matchingLength;
+                        closestProcess = process;
+                    }
+                }
+            }
+
+            return closestProcess;
+        }
+
+        public static int GetProcessMatchingLength(string possibleMatch, string target)
+        {
+            int matchingLength = 0;
+            possibleMatch = possibleMatch.ToLower().Replace(" ", "");
+            target = target.ToLower().Replace(" ", "");
+
+            for (int i = 1; i < target.Length; i++)
+            {
+                if (possibleMatch.Contains(target[..i]))
+                    matchingLength = i;
+                else
+                    break;
+            }
+            return matchingLength;
+        }
+
+        public void LaunchMatchingProgram(Shortcut shortcut)
+        {
+            if (shortcut.Actions.Count == 0 || shortcut.Actions is null)
+                return;
+
+            Process[] oppenedProceses = Process.GetProcesses()
+                .Where(x => !string.IsNullOrEmpty(x.MainWindowTitle))
+                .ToArray();
+
+            foreach (var action in shortcut.Actions)
+            {
+                if (Directory.Exists(action.Path))
+                {
+                    Process? explorerProcess = oppenedProceses.FirstOrDefault(x => x.MainModule.ModuleName == "explorer.exe");
+                    if (explorerProcess is null)
+                    {
+                        Process proc = new();
+                        proc.StartInfo.FileName = "explorer.exe";
+                        proc.StartInfo.Arguments = action.Path;
+                        proc.Start();
+                    }
+                    else
+                    {
+                        IntPtr handle = explorerProcess.MainWindowHandle;
+                        ShowWindow(handle, 4);
+                        SetForegroundWindow(handle);
+                    }
+                    continue;
+                }
+
+                Process? processToOpen = FindClosestProcess(oppenedProceses, action.Path.Split(@"\").Last().Replace(".exe", ""));
+                if (processToOpen is null)
+                {
+                    try
+                    {
+                        Process proc = new();
+                        proc.StartInfo.FileName = action.Path;
+                        proc.Start();
+                    }
+                    catch (Exception) { }
+                }
+                else
+                {
+                    IntPtr handle = processToOpen.MainWindowHandle;
+                    ShowWindow(handle, 4);
+                    SetForegroundWindow(handle);
+                }
+            }
+        }
+
+        [DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+    }
+}
