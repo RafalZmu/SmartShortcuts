@@ -55,6 +55,7 @@ namespace SmartShortcuts.ViewModels
         public ReactiveCommand<Unit, Unit> StartListeningToKeysCommand { get; }
         public ReactiveCommand<string, Unit> ChangeShortcutInFocusCommand { get; }
         public ReactiveCommand<Window, Task> OpenFileBrowserCommand { get; }
+        public ReactiveCommand<string, Unit> DeleteShortcutCommand { get; }
         public string AccentColor { get; set; } = "#066D08";
 
         [Reactive]
@@ -95,9 +96,23 @@ namespace SmartShortcuts.ViewModels
             ChangeShortcutInFocusCommand = ReactiveCommand.Create<string, Unit>(ChangeShortcutInFocus);
             OpenFileBrowserCommand = ReactiveCommand.Create<Window, Task>(OpenFileBrowser);
             StartListeningToKeysCommand = ReactiveCommand.Create(() => { ListeningToKeys = true; });
+            DeleteShortcutCommand = ReactiveCommand.Create<string>(DeleteShortcut);
 
             _keyboardManager = new KeyboardManager(_database);
             _keyboardManager.KeyPressed += ListenToKeysPressed;
+        }
+
+        private void DeleteShortcut(string id)
+        {
+            Shortcut shortcutToDelete = _database.GetByID<Shortcut>(id);
+            List<Action> actionsToDelete = _database.GetAll<Action>().Where(x => x.Shortcut.ID == id).ToList();
+            foreach (Action action in actionsToDelete)
+            {
+                _database.Delete(action);
+            }
+            _database.Delete(shortcutToDelete);
+            _database.Save();
+            Shortcuts.Remove(shortcutToDelete);
         }
 
         private async Task OpenFileBrowser(Window window)

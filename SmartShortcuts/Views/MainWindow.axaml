@@ -19,10 +19,10 @@
 	</Design.DataContext>
 	<Grid Margin="3,20,3,3" ColumnDefinitions="Auto, *">
 		<Grid RowDefinitions="Auto,*" Grid.Column="0">
-			<Button Grid.Row="0" Background="Transparent">
+			<Button Grid.Row="0" Background="Transparent" Command="{Binding OpenShortcutsControlCommand}">
 				<Image Source="/Assets/home.png" Width="30" Height="30" />
 			</Button>
-			<Button Grid.Row="1" VerticalAlignment="Bottom" Background="Transparent">
+			<Button Grid.Row="1" VerticalAlignment="Bottom" Background="Transparent" Command="{Binding OpenSettingsControlCommand}">
 				<Image Source="/Assets/setting.png" Width="30" Height="30" />
 			</Button>
 		</Grid>

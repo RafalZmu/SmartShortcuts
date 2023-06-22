@@ -35,9 +35,10 @@ namespace SmartShortcuts.Services
             return _context.Set<T>().AsQueryable();
         }
 
-        public IQueryable<T> GetByID<T>(string ID) where T : class
+        public T GetByID<T>(string ID) where T : class
         {
-            return _context.Set<T>().Where(x => x.GetType().GetProperty("ID").GetValue(x).ToString() == ID);
+            var type = _context.Set<T>().AsEnumerable().Where(x => x.GetType().GetProperty("ID").GetValue(x).ToString() == ID).FirstOrDefault();
+            return type;
         }
 
         public void Save()

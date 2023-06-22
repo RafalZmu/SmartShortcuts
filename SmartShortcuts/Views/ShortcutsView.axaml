@@ -12,7 +12,7 @@
 		<converters:LastWordFromActionConverter x:Key="lastWordFromActionConverter" />
 	</UserControl.Resources>
 
-	<!-- Shortcuts and Combos layout-->
+	<!-- Shortcuts layout-->
 	<Grid ColumnDefinitions="*,3*">
 		<Grid Grid.Column="0" RowDefinitions="Auto,*,Auto">
 			<Label Grid.Row="0" FontSize="20" HorizontalContentAlignment="Center" BorderBrush="{Binding AccentColor}" BorderThickness="3,0" Background="#292828">Shortcuts</Label>
@@ -23,7 +23,8 @@
 							<Button Margin="0,3" BorderThickness="1" BorderBrush="{Binding $parent[UserControl].DataContext.AccentColor}" Command="{Binding $parent[UserControl].DataContext.ChangeShortcutInFocusCommand}" CommandParameter="{Binding ID}" CornerRadius="5" HorizontalAlignment="Stretch">
 								<DockPanel>
 									<Label DockPanel.Dock="Left" FontSize="15" Content="{Binding ShortcutKeys}" />
-									<Label DockPanel.Dock="Right" FontSize="15" Content="{Binding Action, Converter={StaticResource lastWordFromActionConverter}}" />
+									<Button DockPanel.Dock="Right" FontSize="15" Content="X" Command="{Binding $parent[UserControl].DataContext.DeleteShortcutCommand}" CommandParameter="{Binding ID}" />
+									<Label DockPanel.Dock="Right" FontSize="15" Content="{Binding Actions, Converter={StaticResource lastWordFromActionConverter}}" />
 								</DockPanel>
 							</Button>
 						</DataTemplate>

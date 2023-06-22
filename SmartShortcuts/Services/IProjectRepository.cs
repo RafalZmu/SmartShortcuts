@@ -6,7 +6,7 @@ namespace SmartShortcuts.Services
     {
         #region Public Methods
 
-        IQueryable<T> GetByID<T>(string ID) where T : class;
+        T GetByID<T>(string ID) where T : class;
 
         IQueryable<T> GetAll<T>() where T : class;
 
