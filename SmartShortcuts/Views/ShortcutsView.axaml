@@ -55,7 +55,7 @@
 				<Grid ColumnDefinitions="*,Auto,*" RowDefinitions="Auto, Auto, *">
 					<Button Grid.Column="0" FontSize="20" VerticalAlignment="Top" Margin="0,10,0,0" HorizontalAlignment="Center" Content="Select file to open" Command="{Binding OpenFileBrowserCommand}" CommandParameter="{Binding $parent[Window]}" CornerRadius="8" BorderBrush="{Binding $parent[UserControl].DataContext.AccentColor}" BorderThickness="1" />
 					<Label Grid.Column="1" FontSize="20" Content="Or" Margin="0,15,0,0" HorizontalAlignment="Center" />
-					<Button Grid.Column="2" FontSize="20" VerticalAlignment="Top" Margin="0,10,0,0" HorizontalAlignment="Center" Content="Select folder to open " Command="{Binding OpenFileBrowserCommand}" CommandParameter="{Binding $parent[Window]}" CornerRadius="8" BorderBrush="{Binding $parent[UserControl].DataContext.AccentColor}" BorderThickness="1" />
+					<Button Grid.Column="2" FontSize="20" VerticalAlignment="Top" Margin="0,10,0,0" HorizontalAlignment="Center" Content="Select folder to open " Command="{Binding OpenFolderBrowserComman}" CommandParameter="{Binding $parent[Window]}" CornerRadius="8" BorderBrush="{Binding $parent[UserControl].DataContext.AccentColor}" BorderThickness="1" />
 				</Grid>
 			</Border>
 		</Grid>

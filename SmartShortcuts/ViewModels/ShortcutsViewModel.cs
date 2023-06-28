@@ -53,6 +53,7 @@ namespace SmartShortcuts.ViewModels
         public ReactiveCommand<Unit, Unit> StartListeningToKeysCommand { get; }
         public ReactiveCommand<string, Unit> ChangeShortcutInFocusCommand { get; }
         public ReactiveCommand<Window, Task> OpenFileBrowserCommand { get; }
+        public ReactiveCommand<Window, Task> OpenFolderBrowserComman { get; }
         public ReactiveCommand<string, Unit> DeleteShortcutCommand { get; }
         public string AccentColor { get; set; } = "#066D08";
 
@@ -93,6 +94,7 @@ namespace SmartShortcuts.ViewModels
             CreateNewShortcutCommand = ReactiveCommand.Create(CreateNewShortcut);
             ChangeShortcutInFocusCommand = ReactiveCommand.Create<string, Unit>(ChangeShortcutInFocus);
             OpenFileBrowserCommand = ReactiveCommand.Create<Window, Task>(OpenFileBrowser);
+            OpenFolderBrowserComman = ReactiveCommand.Create<Window, Task>(OpenFolderBrowser);
             StartListeningToKeysCommand = ReactiveCommand.Create(() => { ListeningToKeys = true; });
             DeleteShortcutCommand = ReactiveCommand.Create<string>(DeleteShortcut);
 
@@ -116,14 +118,29 @@ namespace SmartShortcuts.ViewModels
             Shortcuts.Remove(shortcutToDelete);
         }
 
+        private async Task OpenFolderBrowser(Window window)
+        {
+            var folderDialog = new OpenFolderDialog();
+            folderDialog.Directory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            var result = await folderDialog.ShowAsync(window);
+            if (result is not null)
+            {
+                SelectedShortcutAction += "\n" + result;
+            }
+            SelectedShortcutAction.Trim();
+        }
+
         private async Task OpenFileBrowser(Window window)
         {
             var fileDialog = new OpenFileDialog();
+            fileDialog.Directory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            fileDialog.AllowMultiple = true;
             var result = await fileDialog.ShowAsync(window);
             if (result != null)
             {
-                string[] fileNames = result;
+                SelectedShortcutAction += "\n" + string.Join("\n", result);
             }
+            SelectedShortcutAction.Trim();
         }
 
         private void CreateNewShortcut()
