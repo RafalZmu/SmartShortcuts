@@ -13,15 +13,24 @@ namespace SmartShortcuts.ViewModels
 
         public ReactiveCommand<Unit, Unit> OpenSettingsControlCommand { get; set; }
         public ReactiveCommand<Unit, Unit> OpenShortcutsControlCommand { get; set; }
+        private ShortcutsViewModel shortcutsViewModel { get; set; }
+        private SettingsViewModel settingsViewModel { get; set; }
 
         public MainWindowViewModel()
         {
-            var shortcutsViewModel = new ShortcutsViewModel();
-            var settingsViewModel = new SettingsViewModel();
+            shortcutsViewModel = new ShortcutsViewModel();
+            settingsViewModel = new SettingsViewModel();
             CurrentPage = shortcutsViewModel;
 
             OpenSettingsControlCommand = ReactiveCommand.Create(() => { CurrentPage = settingsViewModel; });
             OpenShortcutsControlCommand = ReactiveCommand.Create(() => { CurrentPage = shortcutsViewModel; });
+
+            settingsViewModel.AccentColorChanged += SettingsViewModel_AccentColorChanged;
+        }
+
+        private void SettingsViewModel_AccentColorChanged(object? sender, EventArgs e)
+        {
+            shortcutsViewModel.AccentColor = settingsViewModel.AccentColor;
         }
     }
 }

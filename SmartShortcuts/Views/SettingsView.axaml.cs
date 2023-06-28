@@ -1,6 +1,9 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+using AvaloniaColorPicker;
+using System;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Globalization;
 
 namespace SmartShortcuts.Views;
 

@@ -15,15 +15,15 @@
 	<!-- Shortcuts layout-->
 	<Grid ColumnDefinitions="*,3*">
 		<Grid Grid.Column="0" RowDefinitions="Auto,*,Auto">
-			<Label Grid.Row="0" FontSize="20" HorizontalContentAlignment="Center" BorderBrush="{Binding AccentColor}" BorderThickness="3,0" Background="#292828">Shortcuts</Label>
+			<Label Grid.Row="0" FontSize="30" HorizontalContentAlignment="Center" BorderBrush="{Binding AccentColor}" BorderThickness="3,0" Background="#292828">Shortcuts</Label>
 			<ScrollViewer Grid.Row="1">
-				<ItemsControl Padding="5" Items="{Binding Shortcuts, Mode=TwoWay}" Background="#1E1E1E">
+				<ItemsControl Padding="5" BorderBrush="{Binding AccentColor}" BorderThickness="3,0,0,0" Items="{Binding Shortcuts, Mode=TwoWay}" Background="#1E1E1E">
 					<ItemsControl.ItemTemplate>
 						<DataTemplate>
 							<Button Margin="0,3" BorderThickness="1" BorderBrush="{Binding $parent[UserControl].DataContext.AccentColor}" Command="{Binding $parent[UserControl].DataContext.ChangeShortcutInFocusCommand}" CommandParameter="{Binding ID}" CornerRadius="5" HorizontalAlignment="Stretch">
 								<DockPanel>
 									<Label DockPanel.Dock="Left" FontSize="15" Content="{Binding ShortcutKeys}" />
-									<Button DockPanel.Dock="Right" FontSize="15" Content="X" Command="{Binding $parent[UserControl].DataContext.DeleteShortcutCommand}" CommandParameter="{Binding ID}" />
+									<Button DockPanel.Dock="Right" FontSize="10" Content="X" Command="{Binding $parent[UserControl].DataContext.DeleteShortcutCommand}" CommandParameter="{Binding ID}" />
 									<Label DockPanel.Dock="Right" FontSize="15" Content="{Binding Actions, Converter={StaticResource lastWordFromActionConverter}}" />
 								</DockPanel>
 							</Button>
@@ -32,13 +32,13 @@
 				</ItemsControl>
 			</ScrollViewer>
 			<Border Grid.Row="4" Background="#292828">
-				<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Command="{Binding	CreateNewShortcutCommand}" Background="#292828" Grid.Row="4" Content="Add new shortcut" />
+				<Button BorderBrush="{Binding AccentColor}" CornerRadius="0" BorderThickness="3,0" HorizontalAlignment="Stretch" FontSize="30" HorizontalContentAlignment="Center" Command="{Binding	CreateNewShortcutCommand}" Background="#292828" Grid.Row="4" Content="Add new shortcut" />
 			</Border>
 		</Grid>
 
 		<!-- Shortcut Properties layout -->
 		<Grid RowDefinitions="Auto,Auto,Auto,*" Grid.Column="1" HorizontalAlignment="Stretch">
-			<Label FontSize="20" Background="#292828"  HorizontalContentAlignment="Center"> Shortcut Properties</Label>
+			<Label FontSize="30" Background="#292828"  HorizontalContentAlignment="Center"> Shortcut Properties</Label>
 			<Border Grid.Row="1" CornerRadius="5" Padding="5" Margin="3" Background="#1E1E1E">
 				<Grid ColumnDefinitions="*,Auto">
 					<Label VerticalAlignment="Center" FontSize="20" Grid.Column="0" Content="{Binding SelectedShortcutKeys, StringFormat='Shortcut keys: {0}'}" />

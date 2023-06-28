@@ -1,10 +1,6 @@
-﻿using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Controls.Templates;
+﻿using Avalonia.Controls;
 using AvaloniaEdit.Utils;
 using DynamicData;
-using HarfBuzzSharp;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SmartShortcuts.Models;
@@ -12,13 +8,14 @@ using SmartShortcuts.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive;
-using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Action = SmartShortcuts.Models.Action;
+using System.Text.Json;
 
 namespace SmartShortcuts.ViewModels
 {
@@ -27,6 +24,7 @@ namespace SmartShortcuts.ViewModels
         #region Fields
 
         private readonly KeyboardManager _keyboardManager;
+        private readonly SettingsManager _settingsManager;
         private IProjectRepository _database;
         private HashSet<string> _keysPressed = new();
         private List<string> LastKeysPressed = new();
@@ -100,6 +98,9 @@ namespace SmartShortcuts.ViewModels
 
             _keyboardManager = new KeyboardManager(_database);
             _keyboardManager.KeyPressed += ListenToKeysPressed;
+
+            _settingsManager = new SettingsManager();
+            AccentColor = _settingsManager.Properties["AccentColor"];
         }
 
         private void DeleteShortcut(string id)

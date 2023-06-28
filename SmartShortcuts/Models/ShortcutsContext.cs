@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
+using System.IO;
 
 namespace SmartShortcuts.Models
 {
@@ -18,7 +19,12 @@ namespace SmartShortcuts.Models
             {
                 var folder = Environment.SpecialFolder.LocalApplicationData;
                 var path = Environment.GetFolderPath(folder);
-                DbPath = $"{path}{System.IO.Path.DirectorySeparatorChar}shortcuts.db";
+                var separator = System.IO.Path.DirectorySeparatorChar;
+                if (!File.Exists($"{path}{separator}SmartShortcuts"))
+                {
+                    Directory.CreateDirectory(path + separator + "SmartShortcuts");
+                }
+                DbPath = $"{path}{separator}SmartShortcuts{separator}shortcuts.db";
             }
             else
             {
