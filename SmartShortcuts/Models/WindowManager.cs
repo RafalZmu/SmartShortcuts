@@ -94,7 +94,7 @@ namespace SmartShortcuts.Models
                 else
                 {
                     IntPtr handle = processToOpen.MainWindowHandle;
-                    ShowWindow(handle, 4);
+                    ShowWindow(handle, 5);
                     SetForegroundWindow(handle);
                 }
             }

@@ -6,6 +6,7 @@ using System.Linq;
 using Shell32;
 using IWshRuntimeLibrary;
 using System.Collections.Generic;
+using Avalonia.Interactivity;
 
 namespace SmartShortcuts.Views;
 

@@ -23,7 +23,21 @@
 							<Button Margin="0,3" BorderThickness="1" BorderBrush="{Binding $parent[UserControl].DataContext.AccentColor}" Command="{Binding $parent[UserControl].DataContext.ChangeShortcutInFocusCommand}" CommandParameter="{Binding ID}" CornerRadius="5" HorizontalAlignment="Stretch">
 								<DockPanel>
 									<Label DockPanel.Dock="Left" FontSize="15" Content="{Binding ShortcutKeys}" />
-									<Button DockPanel.Dock="Right" FontSize="10" Content="X" Command="{Binding $parent[UserControl].DataContext.DeleteShortcutCommand}" CommandParameter="{Binding ID}" />
+									<Button DockPanel.Dock="Right" FontSize="10" Content="X" Name="DeleteButton">
+										<Button.Flyout>
+											<Flyout ShowMode="TransientWithDismissOnPointerMoveAway">
+												<Border CornerRadius="5" BorderThickness="3" BorderBrush="{Binding $parent[UserControl].DataContext.AccentColor}" Padding="5">
+													<StackPanel>
+														<TextBlock Padding="0,0,0,10" FontSize="15" Text="Are you sure you want to delete this shortcut?" />
+														<StackPanel Spacing="10" HorizontalAlignment="Center" Orientation="Horizontal">
+															<Button BorderBrush="Green" Command="{Binding $parent[UserControl].DataContext.DeleteShortcutCommand}" CommandParameter="{Binding ID}" Content="Yes" />
+															<Button BorderBrush="Red" Command="{Binding $parent[UserControl].DataContext.CloseFlyoutCommand}" CommandParameter="{Binding ElementName=DeleteButton}" Content="No" />
+														</StackPanel>
+													</StackPanel>
+												</Border>
+											</Flyout>
+										</Button.Flyout>
+									</Button>
 									<Label DockPanel.Dock="Right" FontSize="15" Content="{Binding Actions, Converter={StaticResource lastWordFromActionConverter}}" />
 								</DockPanel>
 							</Button>
@@ -51,11 +65,17 @@
 					<TextBox Name="Action" Grid.Column="1" AcceptsReturn="True" Text="{Binding SelectedShortcutAction}" HorizontalAlignment="Stretch" Watermark="" Margin="0,0,10,0" />
 				</Grid>
 			</Border>
-			<Border Grid.Row="3" Margin="3" CornerRadius="8" Background="#1E1E1E" DragDrop.AllowDrop="True">
+			<Border Grid.Row="3" Margin="3" CornerRadius="8" Padding="10" Background="#1E1E1E" DragDrop.AllowDrop="True">
 				<Grid ColumnDefinitions="*,Auto,*" RowDefinitions="Auto, Auto, *">
-					<Button Grid.Column="0" FontSize="20" VerticalAlignment="Top" Margin="0,10,0,0" HorizontalAlignment="Center" Content="Select file to open" Command="{Binding OpenFileBrowserCommand}" CommandParameter="{Binding $parent[Window]}" CornerRadius="8" BorderBrush="{Binding $parent[UserControl].DataContext.AccentColor}" BorderThickness="1" />
-					<Label Grid.Column="1" FontSize="20" Content="Or" Margin="0,15,0,0" HorizontalAlignment="Center" />
-					<Button Grid.Column="2" FontSize="20" VerticalAlignment="Top" Margin="0,10,0,0" HorizontalAlignment="Center" Content="Select folder to open " Command="{Binding OpenFolderBrowserComman}" CommandParameter="{Binding $parent[Window]}" CornerRadius="8" BorderBrush="{Binding $parent[UserControl].DataContext.AccentColor}" BorderThickness="1" />
+					<Button Grid.Column="0" FontSize="20" VerticalAlignment="Top" HorizontalAlignment="Center" Content="Select file to open" Command="{Binding OpenFileBrowserCommand}" CommandParameter="{Binding $parent[Window]}" CornerRadius="8" BorderBrush="{Binding $parent[UserControl].DataContext.AccentColor}" BorderThickness="1" />
+					<Label Grid.Column="1" FontSize="20" Content="Or" Margin="0,5,0,0" HorizontalAlignment="Center" />
+					<Button Grid.Column="2" FontSize="20" VerticalAlignment="Top" HorizontalAlignment="Center" Content="Select folder to open " Command="{Binding OpenFolderBrowserComman}" CommandParameter="{Binding $parent[Window]}" CornerRadius="8" BorderBrush="{Binding $parent[UserControl].DataContext.AccentColor}" BorderThickness="1" />
+					<Border Padding="10" Grid.Row="2" Grid.ColumnSpan="4" Margin="10" CornerRadius="15" BorderThickness="2" BorderBrush="LightGray">
+						<StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+							<Label Content="Drop files here" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center" />
+							<Image Source="/Assets/upload.png" Width="64" Height="64" />
+						</StackPanel>
+					</Border>
 				</Grid>
 			</Border>
 		</Grid>
