@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Action = SmartShortcuts.Models.Action;
 using System.Text.Json;
+using Avalonia.Threading;
 
 namespace SmartShortcuts.ViewModels
 {
@@ -36,6 +37,7 @@ namespace SmartShortcuts.ViewModels
         #region Properties
 
         private string _selectedShortcutAction;
+        private Button _bindingButton;
 
         public ObservableCollection<Shortcut> Shortcuts
         {
@@ -50,7 +52,7 @@ namespace SmartShortcuts.ViewModels
         }
 
         public ReactiveCommand<Unit, Unit> CreateNewShortcutCommand { get; }
-        public ReactiveCommand<Unit, Unit> StartListeningToKeysCommand { get; }
+        public ReactiveCommand<Button, Unit> StartListeningToKeysCommand { get; }
         public ReactiveCommand<string, Unit> ChangeShortcutInFocusCommand { get; }
         public ReactiveCommand<Window, Task> OpenFileBrowserCommand { get; }
         public ReactiveCommand<Window, Task> OpenFolderBrowserComman { get; }
@@ -96,7 +98,7 @@ namespace SmartShortcuts.ViewModels
             ChangeShortcutInFocusCommand = ReactiveCommand.Create<string, Unit>(ChangeShortcutInFocus);
             OpenFileBrowserCommand = ReactiveCommand.Create<Window, Task>(OpenFileBrowser);
             OpenFolderBrowserComman = ReactiveCommand.Create<Window, Task>(OpenFolderBrowser);
-            StartListeningToKeysCommand = ReactiveCommand.Create(() => { ListeningToKeys = true; });
+            StartListeningToKeysCommand = ReactiveCommand.Create<Button>(StartListenigToKeys);
             DeleteShortcutCommand = ReactiveCommand.Create<string>(DeleteShortcut);
             CloseFlyoutCommand = ReactiveCommand.Create<Button>(CloseFlyout);
 
@@ -108,6 +110,12 @@ namespace SmartShortcuts.ViewModels
         }
 
         #region Private Methods
+
+        private void StartListenigToKeys(Button button)
+        {
+            _bindingButton = button;
+            ListeningToKeys = true;
+        }
 
         private void CloseFlyout(Button deleteButton)
         {
@@ -226,6 +234,7 @@ namespace SmartShortcuts.ViewModels
                     UpdateDatabase(SelectedShortcutID);
                     ListeningToKeys = false;
                     _keysPressed.Clear();
+                    Dispatcher.UIThread.InvokeAsync(() => _bindingButton.Flyout.Hide());
                     return;
                 }
                 _keysPressed.AddRange<string>(pressedKeys);

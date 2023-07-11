@@ -94,7 +94,22 @@ namespace SmartShortcuts.Models
                 else
                 {
                     IntPtr handle = processToOpen.MainWindowHandle;
-                    ShowWindow(handle, 5);
+
+                    Windowplacement placement = new();
+                    GetWindowPlacement(handle, ref placement);
+
+                    if (placement.showCmd == 2)
+                    {
+                        ShowWindow(handle, 9);
+                    }
+                    else
+                    {
+                        if (handle == GetForegroundWindow())
+                        {
+                            ShowWindow(handle, 6);
+                            return;
+                        }
+                    }
                     SetForegroundWindow(handle);
                 }
             }
@@ -106,5 +121,21 @@ namespace SmartShortcuts.Models
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll")]
+        private static extern bool GetWindowPlacement(IntPtr hWnd, ref Windowplacement lpwndpl);
+
+        private struct Windowplacement
+        {
+            public int length;
+            public int flags;
+            public int showCmd;
+            public System.Drawing.Point ptMinPosition;
+            public System.Drawing.Point ptMaxPosition;
+            public System.Drawing.Rectangle rcNormalPosition;
+        }
     }
 }
