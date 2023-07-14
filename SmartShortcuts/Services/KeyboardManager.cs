@@ -11,18 +11,10 @@ namespace SmartShortcuts.Services
 {
     public class KeyboardManager
     {
-        #region Fields
-
-        private readonly IProjectRepository _database;
-
-        #endregion Fields
-
         #region Public Constructors
 
         public KeyboardManager(IProjectRepository database)
         {
-            _database = database;
-
             Task getKeys = Task.Run(() => GetAllCurrentlyPressedKeys());
         }
 
@@ -47,7 +39,7 @@ namespace SmartShortcuts.Services
             while (true)
             {
                 clickedKeys.Clear();
-                Thread.Sleep(50);
+                Thread.Sleep(10);
                 foreach (var item in keyDictionary)
                 {
                     short keyStatus = GetAsyncKeyState(item.Key);
@@ -69,8 +61,8 @@ namespace SmartShortcuts.Services
         private Dictionary<int, string> GetKeyCodesDictionary()
         {
             Dictionary<int, string> returnDictionary = new();
-            string projectDirectory = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName;
-            var keyCodesList = File.OpenText(@$"{projectDirectory}/Assets/KeyCodes.txt")
+            string projectDirectory = Environment.CurrentDirectory;
+            var keyCodesList = File.OpenText($@"{projectDirectory}\Assets\KeyCodes.txt")
                 .ReadToEnd()
                 .Split("\r\n")
                 .ToList();

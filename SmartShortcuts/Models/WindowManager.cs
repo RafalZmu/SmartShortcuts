@@ -21,6 +21,17 @@ namespace SmartShortcuts.Models
             {
                 if (!string.IsNullOrEmpty(process.MainWindowTitle))
                 {
+                    File.AppendAllText("log.txt", "2");
+                    File.AppendAllText("log.txt", process.MainWindowTitle.ToString());
+                    if (process.MainModule is null)
+                    {
+                        File.AppendAllText("log.txt", "Null");
+                    }
+                    else
+                    {
+                        File.AppendAllText("log.txt", "Not Null");
+                    }
+                    File.AppendAllText("log.txt", process.MainModule + "-------\n");
                     int matchingLength = GetProcessMatchingLength(process.MainModule.ModuleName, targetWindowTitle);
 
                     if (matchingLength > maxMatchingLength && matchingLength > (targetWindowTitle.Length / 2) && process.MainModule.ModuleName.Length < targetWindowTitle.Length * 2)
@@ -30,6 +41,7 @@ namespace SmartShortcuts.Models
                     }
                 }
             }
+            File.AppendAllText("log.txt", closestProcess?.MainModule.ModuleName + "\n");
 
             return closestProcess;
         }
@@ -61,6 +73,7 @@ namespace SmartShortcuts.Models
 
             foreach (var action in shortcut.Actions)
             {
+                File.AppendAllText("log.txt", action.Path + "\n");
                 if (Directory.Exists(action.Path))
                 {
                     Process? explorerProcess = oppenedProceses.FirstOrDefault(x => x.MainModule.ModuleName == "explorer.exe");
@@ -79,6 +92,7 @@ namespace SmartShortcuts.Models
                     }
                     continue;
                 }
+                File.AppendAllText("log.txt", "1");
 
                 Process? processToOpen = FindClosestProcess(oppenedProceses, action.Path.Split(@"\").Last().Replace(".exe", ""));
                 if (processToOpen is null)

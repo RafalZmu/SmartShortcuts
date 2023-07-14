@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SmartShortcuts": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

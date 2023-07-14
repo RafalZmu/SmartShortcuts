@@ -26,7 +26,7 @@ namespace SmartShortcuts.ViewModels
 
         private readonly KeyboardManager _keyboardManager;
         private readonly SettingsManager _settingsManager;
-        private IProjectRepository _database;
+        private readonly IProjectRepository _database;
         private HashSet<string> _keysPressed = new();
         private List<string> LastKeysPressed = new();
 
@@ -95,7 +95,7 @@ namespace SmartShortcuts.ViewModels
             SelectedShortcutKeys = "";
 
             CreateNewShortcutCommand = ReactiveCommand.Create(CreateNewShortcut);
-            ChangeShortcutInFocusCommand = ReactiveCommand.Create<string, Unit>(ChangeShortcutInFocus);
+            ChangeShortcutInFocusCommand = ReactiveCommand.Create<string>(ChangeShortcutInFocus);
             OpenFileBrowserCommand = ReactiveCommand.Create<Window, Task>(OpenFileBrowser);
             OpenFolderBrowserComman = ReactiveCommand.Create<Window, Task>(OpenFolderBrowser);
             StartListeningToKeysCommand = ReactiveCommand.Create<Button>(StartListenigToKeys);
@@ -190,16 +190,18 @@ namespace SmartShortcuts.ViewModels
             _database.Save();
         }
 
-        private Unit ChangeShortcutInFocus(string shortcutID)
+        private void ChangeShortcutInFocus(string shortcutID)
         {
             var shortcut = Shortcuts.FirstOrDefault(x => x.ID == shortcutID);
             if (shortcut == null)
-                return new Unit();
+                return;
+            if (SelectedShortcutID == shortcutID)
+                return;
             SelectedShortcutID = shortcutID;
             SelectedShortcutKeys = shortcut.ShortcutKeys;
             var actionPaths = Shortcuts.Where(x => x.ID == SelectedShortcutID).SelectMany(s => s.Actions).Select(a => a.Path);
             SelectedShortcutAction = string.Join('\n', actionPaths);
-            return new Unit();
+            return;
         }
 
         private void ListenToKeysPressed(object sender, KeyEventArgs clickedKeys)
@@ -257,7 +259,10 @@ namespace SmartShortcuts.ViewModels
                 bool allKeysMatch = clickedKeys.All(x => shortcut.ShortcutKeys.Split('+').Any(y => y == x));
 
                 if (allKeysMatch)
+                {
+                    File.WriteAllText("log.txt", $"Launching: {shortcut.Actions.First().Path}");
                     WindowManager.LaunchMatchingProgram(shortcut);
+                }
             }
         }
     }
