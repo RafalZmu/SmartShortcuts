@@ -260,7 +260,6 @@ namespace SmartShortcuts.ViewModels
 
                 if (allKeysMatch)
                 {
-                    File.WriteAllText("log.txt", $"Launching: {shortcut.Actions.First().Path}");
                     WindowManager.LaunchMatchingProgram(shortcut);
                 }
             }
