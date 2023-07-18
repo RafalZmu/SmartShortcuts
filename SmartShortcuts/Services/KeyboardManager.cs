@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Win32;
 
 namespace SmartShortcuts.Services
 {
@@ -16,6 +17,17 @@ namespace SmartShortcuts.Services
         public KeyboardManager(IProjectRepository database)
         {
             Task getKeys = Task.Run(() => GetAllCurrentlyPressedKeys());
+            SystemEvents.PowerModeChanged += (s, e) =>
+            {
+                if (e.Mode == PowerModes.Suspend)
+                {
+                    getKeys.Dispose();
+                }
+                else if (e.Mode == PowerModes.Resume)
+                {
+                    getKeys = Task.Run(() => GetAllCurrentlyPressedKeys());
+                }
+            };
         }
 
         #endregion Public Constructors
